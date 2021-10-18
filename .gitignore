@@ -2,3 +2,6 @@
 *.iml
 target/
 mylog*
+DS_Store
+logfile*
+
