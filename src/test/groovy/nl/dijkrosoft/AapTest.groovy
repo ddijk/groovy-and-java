@@ -1,16 +1,14 @@
 package nl.dijkrosoft
 
+import org.junit.jupiter.api.Test
 
-import spock.lang.Specification
+class AapTest extends GroovyTestCase {
 
-class AapTest extends Specification {
+    @Test
+    void testAdd() {
 
-    def testCombinations() {
-        given: "an array"
-        when: "combined"
-        def combinations = [[2, 3],[4, 5, 6]].combinations()
+        Aap aap = new Aap();
 
-        then: "all combintations"
-        assert combinations == [[2, 4], [3, 4], [2, 5], [3, 5], [2, 6], [3, 6]]
+        assert 3 == aap.add(1,2)
     }
 }

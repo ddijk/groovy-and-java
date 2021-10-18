@@ -7,8 +7,8 @@ class Aap {
         def p = Person(name:'dick', lastName: 'dijk')
         print p
     }
-}
-class Person {
-    String name
-    String lastName
+
+    def add(i, j) {
+        return i+j
+    }
 }

@@ -96,7 +96,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>com.example.test.HelloWorld</main.class>
         <java.version>8</java.version>
-        <junit.jupiter.version>5.4.2</junit.jupiter.version>
+        <junit.jupiter.version>5.8.1</junit.jupiter.version>
         <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
         <maven.jar.plugin.version>3.1.1</maven.jar.plugin.version>
         <maven.surefire.plugin.version>2.22.1</maven.surefire.plugin.version>
@@ -105,27 +105,51 @@
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>${junit.jupiter.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-engine</artifactId>
             <version>${junit.jupiter.version}</version>
             <scope>test</scope>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.junit.platform</groupId>-->
-<!--            <artifactId>junit-platform-commons</artifactId>-->
-<!--            <version>1.7.0</version>-->
-<!--            <scope>test</scope>-->
-<!--        </dependency>-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>5.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-commons -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <version>1.8.1</version>
+        </dependency>
+
+        <dependency> <!-- (1) -->
+            <groupId>com.github.testng-team</groupId>
+            <artifactId>testng-junit5</artifactId>
+            <version>0.0.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!--        <dependency>-->
+        <!--            <groupId>org.junit.platform</groupId>-->
+        <!--            <artifactId>junit-platform-commons</artifactId>-->
+        <!--            <version>1.7.0</version>-->
+        <!--            <scope>test</scope>-->
+        <!--        </dependency>-->
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
+            <artifactId>groovy-all</artifactId>
             <version>3.0.9</version>
-<!--            <type>pom</type>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.testng</groupId>-->
-<!--                    <artifactId>testng</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
+            <type>pom</type>
+            <!--            <exclusions>-->
+            <!--                <exclusion>-->
+            <!--                    <groupId>org.testng</groupId>-->
+            <!--                    <artifactId>testng</artifactId>-->
+            <!--                </exclusion>-->
+            <!--            </exclusions>-->
         </dependency>
     </dependencies>
 
@@ -142,45 +166,67 @@
                     <showDeprecation>true</showDeprecation>
                 </configuration>
             </plugin>
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>${maven.jar.plugin.version}</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>${main.class}</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
                 <dependencies>
-<!--                    &lt;!&ndash;                    <dependency>&ndash;&gt;-->
-<!--                    &lt;!&ndash;                        <groupId>org.apache.maven.surefire</groupId>&ndash;&gt;-->
-<!--                    &lt;!&ndash;                        <artifactId>surefire-testng</artifactId>&ndash;&gt;-->
-<!--                    &lt;!&ndash;                        <version>${maven.surefire.plugin.version}</version>&ndash;&gt;-->
-<!--                    &lt;!&ndash;                    </dependency>&ndash;&gt;-->
+                    <dependency> <!-- (2) -->
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit-platform</artifactId>
+                        <version>2.22.2</version>
+                    </dependency>
                 </dependencies>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.gmavenplus</groupId>
-                <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.13.0</version>
+                <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
                     <execution>
+                        <id>compile</id>
+                        <phase>compile</phase>
+                        <configuration>
+                            <tasks>
+                                <mkdir dir="${basedir}/src/main/groovy"/>
+                                <taskdef name="groovyc"
+                                         classname="org.codehaus.groovy.ant.Groovyc">
+                                    <classpath refid="maven.compile.classpath"/>
+                                </taskdef>
+                                <mkdir dir="${project.build.outputDirectory}"/>
+                                <groovyc destdir="${project.build.outputDirectory}"
+                                         srcdir="${basedir}/src/main/groovy/" listfiles="true">
+                                    <classpath refid="maven.compile.classpath"/>
+                                </groovyc>
+                            </tasks>
+                        </configuration>
                         <goals>
-                            <goal>compileTests</goal>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>test-compile</id>
+                        <phase>test-compile</phase>
+                        <configuration>
+                            <tasks>
+                                <mkdir dir="${basedir}/src/test/groovy"/>
+                                <taskdef name="groovyc"
+                                         classname="org.codehaus.groovy.ant.Groovyc">
+                                    <classpath refid="maven.test.classpath"/>
+                                </taskdef>
+                                <mkdir dir="${project.build.testOutputDirectory}"/>
+                                <groovyc destdir="${project.build.testOutputDirectory}"
+                                         srcdir="${basedir}/src/test/groovy/" listfiles="true">
+                                    <classpath refid="maven.test.classpath"/>
+                                </groovyc>
+                            </tasks>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
+
+
         </plugins>
     </build>
 </project>
